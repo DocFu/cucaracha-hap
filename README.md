@@ -1,3 +1,3 @@
 # cucaracha-hap
 
-This project uses https://github.com/beowulfe/HAP-Java/tree/sample combined with http://pi4j.com/
+This project tries to combine https://github.com/beowulfe/HAP-Java/  with http://pi4j.com/
