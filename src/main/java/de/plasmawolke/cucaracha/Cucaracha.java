@@ -9,6 +9,11 @@ import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.commons.lang3.SerializationUtils;
 
 import com.beowulfe.hap.HomekitAuthInfo;
@@ -31,6 +36,7 @@ public class Cucaracha {
 	private CucarachaConfig cfg = null;
 
 	private List<LightEltako> lightEltakos = new ArrayList<>();
+	private List<OutletEltako> outletEltakos = new ArrayList<>();
 
 	/**
 	 * Constructs the Application
@@ -54,8 +60,9 @@ public class Cucaracha {
 	 * Sets up configuration
 	 * @throws IOException
 	 *             if files could not be created
+	 * @throws JAXBException
 	 */
-	private void init() throws IOException {
+	private void init() throws IOException, JAXBException {
 
 		if (!BASE_DIR.exists()) {
 			BASE_DIR.mkdirs();
@@ -65,10 +72,20 @@ public class Cucaracha {
 		// if config file exists, try to read and set config
 		// else create a new file from a new CucarachaConfig instance
 		if (CONFIG_FILE.exists()) {
-			// TODO
+
+			Unmarshaller unmarshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class })
+					.createUnmarshaller();
+			cfg = (CucarachaConfig) unmarshaller.unmarshal(CONFIG_FILE);
+
+			System.out.println("Using config file [" + CONFIG_FILE + "].");
+
 		} else {
 			cfg = new CucarachaConfig();
-			// TODO unmarshal to file
+
+			Marshaller marshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class }).createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			marshaller.marshal(cfg, CONFIG_FILE);
+
 			System.out.println("Created new config file [" + CONFIG_FILE
 					+ "] with default configuration. Please edit according to your needs. Note: Your changes will take effect with next restart.");
 		}
@@ -84,7 +101,7 @@ public class Cucaracha {
 
 		LightEltako lightEltako2 = new LightEltako();
 		lightEltako2.setHapId(3);
-		lightEltako2.setHapLabel("Unterschrank");
+		lightEltako2.setHapLabel("Spüle");
 		lightEltakos.add(lightEltako2);
 
 		LightEltako lightEltako3 = new LightEltako();
@@ -96,6 +113,11 @@ public class Cucaracha {
 		lightEltako4.setHapId(5);
 		lightEltako4.setHapLabel("Sofa");
 		lightEltakos.add(lightEltako4);
+
+		OutletEltako outletEltako = new OutletEltako();
+		outletEltako.setHapId(6);
+		outletEltako.setHapLabel("TV");
+		outletEltakos.add(outletEltako);
 
 	}
 
@@ -155,6 +177,9 @@ public class Cucaracha {
 
 		for (LightEltako lightEltako : lightEltakos) {
 			bridge.addAccessory(lightEltako);
+		}
+		for (OutletEltako outletEltako : outletEltakos) {
+			bridge.addAccessory(outletEltako);
 		}
 
 		bridge.start();

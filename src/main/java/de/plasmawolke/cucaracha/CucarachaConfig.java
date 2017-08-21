@@ -7,15 +7,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  * 
  * @author Arne Schueler
  */
-@XmlRootElement
+@XmlRootElement(name = "cucaracha-config")
 public class CucarachaConfig {
 
-	private final int bridgePort = 9123;
-	private final String bridgePin = "000-00-000";
-	private final String bridgeName = "CucarachaDev";
-	private final String bridgeVendor = "DocFu Inc.";
-	private final String bridgeVersion = "2017.1";
-	private final String bridgeSerialNo = "0000";
+	private int bridgePort = 9123;
+	private String bridgePin = "000-00-000";
+	private String bridgeName = "CucarachaDev";
+	private String bridgeVendor = "DocFu Inc.";
+	private String bridgeVersion = "2017.1";
+	private String bridgeSerialNo = "0000";
 
 	/**
 	 * @return the bridgePort
@@ -57,6 +57,54 @@ public class CucarachaConfig {
 	 */
 	public final String getBridgeSerialNo() {
 		return bridgeSerialNo;
+	}
+
+	/**
+	 * @param bridgePort
+	 *            the bridgePort to set
+	 */
+	public final void setBridgePort(int bridgePort) {
+		this.bridgePort = bridgePort;
+	}
+
+	/**
+	 * @param bridgePin
+	 *            the bridgePin to set
+	 */
+	public final void setBridgePin(String bridgePin) {
+		this.bridgePin = bridgePin;
+	}
+
+	/**
+	 * @param bridgeName
+	 *            the bridgeName to set
+	 */
+	public final void setBridgeName(String bridgeName) {
+		this.bridgeName = bridgeName;
+	}
+
+	/**
+	 * @param bridgeVendor
+	 *            the bridgeVendor to set
+	 */
+	public final void setBridgeVendor(String bridgeVendor) {
+		this.bridgeVendor = bridgeVendor;
+	}
+
+	/**
+	 * @param bridgeVersion
+	 *            the bridgeVersion to set
+	 */
+	public final void setBridgeVersion(String bridgeVersion) {
+		this.bridgeVersion = bridgeVersion;
+	}
+
+	/**
+	 * @param bridgeSerialNo
+	 *            the bridgeSerialNo to set
+	 */
+	public final void setBridgeSerialNo(String bridgeSerialNo) {
+		this.bridgeSerialNo = bridgeSerialNo;
 	}
 
 }
