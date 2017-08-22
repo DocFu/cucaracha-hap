@@ -16,10 +16,15 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang3.SerializationUtils;
 
+import com.beowulfe.hap.HomekitAccessory;
 import com.beowulfe.hap.HomekitAuthInfo;
 import com.beowulfe.hap.HomekitRoot;
 import com.beowulfe.hap.HomekitServer;
 import com.beowulfe.hap.impl.HomekitBridge;
+
+import de.plasmawolke.cucaracha.model.AccessoryType;
+import de.plasmawolke.cucaracha.model.CucarachaAccessory;
+import de.plasmawolke.cucaracha.model.CucarachaConfig;
 
 /**
  * Cucaracha is a {@link HomekitBridge} running on a Raspberry PI wired with
@@ -35,8 +40,7 @@ public class Cucaracha {
 
 	private CucarachaConfig cfg = null;
 
-	private List<LightEltako> lightEltakos = new ArrayList<>();
-	private List<OutletEltako> outletEltakos = new ArrayList<>();
+	private List<HomekitAccessory> accessories = new ArrayList<>();
 
 	/**
 	 * Constructs the Application
@@ -47,6 +51,9 @@ public class Cucaracha {
 
 			// Initialize config (bridge config, switches,...)
 			init();
+
+			// Wire GPIO
+			wire();
 
 			// Start HAP stuff
 			startHomekitBridge();
@@ -77,47 +84,80 @@ public class Cucaracha {
 					.createUnmarshaller();
 			cfg = (CucarachaConfig) unmarshaller.unmarshal(CONFIG_FILE);
 
-			System.out.println("Using config file [" + CONFIG_FILE + "].");
+			System.out.println("Using configiguration [" + CONFIG_FILE + "].");
 
 		} else {
 			cfg = new CucarachaConfig();
+
+			CucarachaAccessory sampleAccessory1 = new CucarachaAccessory();
+			sampleAccessory1.setType(AccessoryType.OUTLET);
+			sampleAccessory1.setHapId(2);
+			sampleAccessory1.setHapLabel("My Outlet");
+			sampleAccessory1.setGpioPowerStateWriterPin(0);
+			sampleAccessory1.setGpioPowerStateReaderPin(1);
+
+			cfg.getAccessories().add(sampleAccessory1);
+
+			CucarachaAccessory sampleAccessory2 = new CucarachaAccessory();
+			sampleAccessory2.setType(AccessoryType.LIGHT);
+			sampleAccessory2.setHapId(3);
+			sampleAccessory2.setHapLabel("My Light");
+			sampleAccessory2.setGpioPowerStateWriterPin(2);
+			sampleAccessory2.setGpioPowerStateReaderPin(3);
+
+			cfg.getAccessories().add(sampleAccessory2);
 
 			Marshaller marshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class }).createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.marshal(cfg, CONFIG_FILE);
 
-			System.out.println("Created new config file [" + CONFIG_FILE
-					+ "] with default configuration. Please edit according to your needs. Note: Your changes will take effect with next restart.");
+			System.out.println("Created new configuration [" + CONFIG_FILE
+					+ "] with example values. Please edit the file according to your needs and restart.");
+			System.exit(0);
 		}
 
-		// TODO Populate devices from config
+		System.out.println(cfg.print());
+	}
 
-		// some mock devices...
+	/**
+	 * Wire GPIO to HAP an vice versa by information from config
+	 */
+	private void wire() {
 
-		LightEltako lightEltako1 = new LightEltako();
-		lightEltako1.setHapId(2);
-		lightEltako1.setHapLabel("Esstisch");
-		lightEltakos.add(lightEltako1);
+		List<CucarachaAccessory> configAccessories = cfg.getAccessories();
 
-		LightEltako lightEltako2 = new LightEltako();
-		lightEltako2.setHapId(3);
-		lightEltako2.setHapLabel("Spüle");
-		lightEltakos.add(lightEltako2);
+		for (CucarachaAccessory cucarachaAccessory : configAccessories) {
 
-		LightEltako lightEltako3 = new LightEltako();
-		lightEltako3.setHapId(4);
-		lightEltako3.setHapLabel("Theke");
-		lightEltakos.add(lightEltako3);
+			switch (cucarachaAccessory.getType()) {
+				case OUTLET:
 
-		LightEltako lightEltako4 = new LightEltako();
-		lightEltako4.setHapId(5);
-		lightEltako4.setHapLabel("Sofa");
-		lightEltakos.add(lightEltako4);
+					OutletEltako outletEltako = new OutletEltako();
+					outletEltako.setHapId(cucarachaAccessory.getHapId());
+					outletEltako.setHapLabel(cucarachaAccessory.getHapLabel());
+					outletEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
+					outletEltako.setHapModel(cucarachaAccessory.getHapModel());
+					outletEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					accessories.add(outletEltako);
 
-		OutletEltako outletEltako = new OutletEltako();
-		outletEltako.setHapId(6);
-		outletEltako.setHapLabel("TV");
-		outletEltakos.add(outletEltako);
+					break;
+
+				case LIGHT:
+
+					LightEltako lightEltako = new LightEltako();
+					lightEltako.setHapId(cucarachaAccessory.getHapId());
+					lightEltako.setHapLabel(cucarachaAccessory.getHapLabel());
+					lightEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
+					lightEltako.setHapModel(cucarachaAccessory.getHapModel());
+					lightEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					accessories.add(lightEltako);
+
+					break;
+
+				default:
+					break;
+			}
+
+		}
 
 	}
 
@@ -175,13 +215,9 @@ public class Cucaracha {
 		HomekitRoot bridge = homekit.createBridge(authInfo, cfg.getBridgeName(), cfg.getBridgeVendor(),
 				cfg.getBridgeVersion(), cfg.getBridgeSerialNo());
 
-		for (LightEltako lightEltako : lightEltakos) {
-			bridge.addAccessory(lightEltako);
+		for (HomekitAccessory homekitAccessory : accessories) {
+			bridge.addAccessory(homekitAccessory);
 		}
-		for (OutletEltako outletEltako : outletEltakos) {
-			bridge.addAccessory(outletEltako);
-		}
-
 		bridge.start();
 	}
 

@@ -1,6 +1,11 @@
-package de.plasmawolke.cucaracha;
+package de.plasmawolke.cucaracha.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 /**
  * The config
@@ -16,6 +21,7 @@ public class CucarachaConfig {
 	private String bridgeVendor = "DocFu Inc.";
 	private String bridgeVersion = "2017.1";
 	private String bridgeSerialNo = "0000";
+	private List<CucarachaAccessory> accessories = new ArrayList<>();
 
 	/**
 	 * @return the bridgePort
@@ -105,6 +111,25 @@ public class CucarachaConfig {
 	 */
 	public final void setBridgeSerialNo(String bridgeSerialNo) {
 		this.bridgeSerialNo = bridgeSerialNo;
+	}
+
+	/**
+	 * @return the accessories
+	 */
+	public final List<CucarachaAccessory> getAccessories() {
+		return accessories;
+	}
+
+	/**
+	 * @param accessories
+	 *            the accessories to set
+	 */
+	public final void setAccessories(List<CucarachaAccessory> accessories) {
+		this.accessories = accessories;
+	}
+
+	public String print() {
+		return ReflectionToStringBuilder.toString(this);
 	}
 
 }
