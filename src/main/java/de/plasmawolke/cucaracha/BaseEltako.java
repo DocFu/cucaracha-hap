@@ -2,6 +2,14 @@ package de.plasmawolke.cucaracha;
 
 import com.beowulfe.hap.HomekitAccessory;
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
+import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.PinPullResistance;
+import com.pi4j.io.gpio.PinState;
+import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 
@@ -10,8 +18,50 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	// HAP 
 	private HomekitCharacteristicChangeCallback powerStateChangeCallback = null;
 
+	// GPIO
+	private GpioController gpio;
+	private GpioPinDigitalOutput eltakoOutput;
+	private GpioPinDigitalInput eltakoInput;
+
 	// Shared
 	private boolean internalPowerState = false;
+
+	/**
+	 * 
+	 */
+	public void wire() {
+
+		if (getGpioPowerStateWriterPin() != -1) {
+			eltakoOutput = getGpio().provisionDigitalOutputPin(RaspiPin.getPinByAddress(getGpioPowerStateWriterPin()),
+					getHapLabel(), PinState.LOW);
+
+		}
+
+		if (getGpioPowerStateReaderPin() != -1) {
+			eltakoInput = getGpio().provisionDigitalInputPin(RaspiPin.getPinByAddress(getGpioPowerStateReaderPin()),
+					getHapLabel() + "State", PinPullResistance.PULL_DOWN);
+
+			eltakoInput.addListener(new GpioPinListenerDigital() {
+
+				@Override
+				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+
+					// display pin state on console
+					System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
+
+					if (event.getState().isHigh()) {
+						internalPowerState = true;
+					} else {
+						internalPowerState = false;
+					}
+
+					powerStateChanged();
+
+				}
+			});
+		}
+
+	}
 
 	/**
 	 * Called by HAP API implementation
@@ -97,6 +147,51 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	@Override
 	public final String getManufacturer() {
 		return getHapManufacturer();
+	}
+
+	/**
+	 * @return the gpio
+	 */
+	public final GpioController getGpio() {
+		return gpio;
+	}
+
+	/**
+	 * @param gpio
+	 *            the gpio to set
+	 */
+	public final void setGpio(GpioController gpio) {
+		this.gpio = gpio;
+	}
+
+	/**
+	 * @return the eltakoOutput
+	 */
+	public final GpioPinDigitalOutput getEltakoOutput() {
+		return eltakoOutput;
+	}
+
+	/**
+	 * @param eltakoOutput
+	 *            the eltakoOutput to set
+	 */
+	public final void setEltakoOutput(GpioPinDigitalOutput eltakoOutput) {
+		this.eltakoOutput = eltakoOutput;
+	}
+
+	/**
+	 * @return the eltakoInput
+	 */
+	public final GpioPinDigitalInput getEltakoInput() {
+		return eltakoInput;
+	}
+
+	/**
+	 * @param eltakoInput
+	 *            the eltakoInput to set
+	 */
+	public final void setEltakoInput(GpioPinDigitalInput eltakoInput) {
+		this.eltakoInput = eltakoInput;
 	}
 
 }

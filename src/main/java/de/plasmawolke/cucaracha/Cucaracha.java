@@ -21,6 +21,8 @@ import com.beowulfe.hap.HomekitAuthInfo;
 import com.beowulfe.hap.HomekitRoot;
 import com.beowulfe.hap.HomekitServer;
 import com.beowulfe.hap.impl.HomekitBridge;
+import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioFactory;
 
 import de.plasmawolke.cucaracha.model.AccessoryType;
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
@@ -37,6 +39,8 @@ public class Cucaracha {
 	public static final File BASE_DIR = new File(System.getProperty("user.home") + "/.cucaracha/");
 	private static final File AUTH_INFO_FILE = new File(BASE_DIR, "auth-info.ser");
 	private static final File CONFIG_FILE = new File(BASE_DIR, "config.xml");
+
+	private GpioController gpio = null;
 
 	private CucarachaConfig cfg = null;
 
@@ -124,6 +128,15 @@ public class Cucaracha {
 	 */
 	private void wire() {
 
+		boolean runningOnPi = false;
+
+		if (runningOnPi) {
+			gpio = GpioFactory.getInstance();
+		} else {
+			System.out.println("Wrong platform - using GPIO Mock!");
+			gpio = new MockGpioController();
+		}
+
 		List<CucarachaAccessory> configAccessories = cfg.getAccessories();
 
 		for (CucarachaAccessory cucarachaAccessory : configAccessories) {
@@ -132,11 +145,13 @@ public class Cucaracha {
 				case OUTLET:
 
 					OutletEltako outletEltako = new OutletEltako();
+					outletEltako.setGpio(gpio);
 					outletEltako.setHapId(cucarachaAccessory.getHapId());
 					outletEltako.setHapLabel(cucarachaAccessory.getHapLabel());
 					outletEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
 					outletEltako.setHapModel(cucarachaAccessory.getHapModel());
 					outletEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					outletEltako.wire();
 					accessories.add(outletEltako);
 
 					break;
@@ -144,11 +159,13 @@ public class Cucaracha {
 				case LIGHT:
 
 					LightEltako lightEltako = new LightEltako();
+					lightEltako.setGpio(gpio);
 					lightEltako.setHapId(cucarachaAccessory.getHapId());
 					lightEltako.setHapLabel(cucarachaAccessory.getHapLabel());
 					lightEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
 					lightEltako.setHapModel(cucarachaAccessory.getHapModel());
 					lightEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					lightEltako.wire();
 					accessories.add(lightEltako);
 
 					break;

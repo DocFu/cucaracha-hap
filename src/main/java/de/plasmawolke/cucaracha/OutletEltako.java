@@ -12,29 +12,18 @@ import com.beowulfe.hap.accessories.Outlet;
 public class OutletEltako extends BaseEltako implements Outlet {
 
 	/**
-	 * Event Handler Method for GPIO Listener on Pin
-	 * getGpioPowerStateReaderPin();
-	 * @throws Exception
-	 */
-	public void onGpioInputChange() throws Exception {
-		setInternalPowerState(true); // or false
-		powerStateChanged();
-	}
-
-	/**
 	 * Called by HAP API implementation
 	 */
 	@Override
 	public CompletableFuture<Void> setPowerState(boolean state) throws Exception {
-		setInternalPowerState(state);
+
 		// set internal shared value, which may not always reflect the reality
+		setInternalPowerState(state);
 
-		int pinNumber = getGpioPowerStateWriterPin();
-
-		if (state == true) {
-			// set pinNumber to high
-		} else {
-			// set pinNumber to low
+		try {
+			getEltakoOutput().pulse(500);
+		} catch (Exception e) {
+			System.out.println("Could not pulse pin: " + e);
 		}
 
 		powerStateChanged();
