@@ -6,8 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -148,7 +152,7 @@ public class Cucaracha {
 		if (runningOnPi) {
 			gpio = GpioFactory.getInstance();
 		} else {
-			logger.warn("Wrong platform detected! Using GPIO Mock. Expect some Null Pointers...");
+			logger.warn("Wrong platform detected! Using GPIO Mock. Expect some Errors (NPEs)...");
 			gpio = new MockGpioController();
 		}
 
@@ -255,7 +259,7 @@ public class Cucaracha {
 	 */
 	private void startHomekitBridge() throws IOException, InvalidAlgorithmParameterException {
 		logger.info("Starting Homekit Bridge...");
-		HomekitServer homekit = new HomekitServer(cfg.getBridgePort());
+		HomekitServer homekit = new HomekitServer(InetAddress.getByName(cfg.getBridgeHost()), cfg.getBridgePort());
 		HomekitAuthInfo authInfo = createHomekitAuthInfo();
 		HomekitRoot bridge = homekit.createBridge(authInfo, cfg.getBridgeName(), cfg.getBridgeVendor(),
 				cfg.getBridgeVersion(), cfg.getBridgeSerialNo());
@@ -272,6 +276,32 @@ public class Cucaracha {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		try {
+			System.out.println("Host addr: " + InetAddress.getLocalHost().getHostAddress());
+		} catch (UnknownHostException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} // often returns "127.0.0.1"
+		Enumeration<NetworkInterface> n = null;
+		try {
+			n = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		while (n.hasMoreElements()) {
+			NetworkInterface e = (NetworkInterface) n.nextElement();
+
+			System.out.println("Interface: " + e.getName());
+			Enumeration<InetAddress> a = e.getInetAddresses();
+			for (; a.hasMoreElements();) {
+				InetAddress addr = a.nextElement();
+				System.out.println("  " + addr.getHostAddress());
+			}
+
+		}
+
 		new Cucaracha();
 	}
 

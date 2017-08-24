@@ -1,5 +1,7 @@
 package de.plasmawolke.cucaracha.model;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,12 +18,22 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 public class CucarachaConfig {
 
 	private int bridgePort = 9123;
+	private String bridgeHost = "192.168.1.2";
 	private String bridgePin = "000-00-000";
-	private String bridgeName = "CucarachaDev";
+	private String bridgeName = "CucaTestBridge";
 	private String bridgeVendor = "DocFu Inc.";
 	private String bridgeVersion = "2017.1";
 	private String bridgeSerialNo = "0000";
 	private List<CucarachaAccessory> accessories = new ArrayList<>();
+
+	public CucarachaConfig() {
+
+		try {
+			bridgeHost = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+
+		}
+	}
 
 	/**
 	 * @return the bridgePort
@@ -126,6 +138,21 @@ public class CucarachaConfig {
 	 */
 	public final void setAccessories(List<CucarachaAccessory> accessories) {
 		this.accessories = accessories;
+	}
+
+	/**
+	 * @return the bridgeHost
+	 */
+	public final String getBridgeHost() {
+		return bridgeHost;
+	}
+
+	/**
+	 * @param bridgeHost
+	 *            the bridgeHost to set
+	 */
+	public final void setBridgeHost(String bridgeHost) {
+		this.bridgeHost = bridgeHost;
 	}
 
 	public String print() {
