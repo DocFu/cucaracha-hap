@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +79,8 @@ public class Cucaracha {
 	 * @throws JAXBException
 	 */
 	private void init() throws IOException, JAXBException {
+
+		logger.info("InetAdress: " + InetAddress.getLocalHost());
 
 		logger.info("Intializing configuration...");
 
