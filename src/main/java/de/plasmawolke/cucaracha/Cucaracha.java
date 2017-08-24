@@ -206,17 +206,21 @@ public class Cucaracha {
 	 *             if file for auth info persistence could not be created.
 	 */
 	private HomekitAuthInfo createHomekitAuthInfo() throws InvalidAlgorithmParameterException, IOException {
+		logger.info("Creating HomekitAuthInfo...");
 		HomekitAuthInfoImpl authInfo = null;
 
 		if (!AUTH_INFO_FILE.exists()) {
 			AUTH_INFO_FILE.createNewFile();
+			logger.info("Created new HomekitAuthInfo File " + AUTH_INFO_FILE);
 		}
 
 		if (AUTH_INFO_FILE.length() > 0) {
 			authInfo = SerializationUtils.deserialize(new FileInputStream(AUTH_INFO_FILE));
+			logger.info("Restored HomekitAuthInfo from File " + AUTH_INFO_FILE);
 		}
 
 		if (authInfo == null) {
+
 			// Create a new one
 			String mac = HomekitServer.generateMac();
 			BigInteger salt = HomekitServer.generateSalt();
@@ -230,9 +234,13 @@ public class Cucaracha {
 
 			// and serialize it
 			SerializationUtils.serialize(authInfo, new FileOutputStream(AUTH_INFO_FILE));
+			logger.info("Created an persisted new HomekitAuthInfo.");
 
 		}
-
+		logger.info("Mac: " + authInfo.getMac());
+		logger.info("Salt: " + authInfo.getSalt());
+		logger.info("PIN: " + authInfo.getPin());
+		logger.info("PK: " + authInfo.getPrivateKey());
 		return authInfo;
 
 	}
