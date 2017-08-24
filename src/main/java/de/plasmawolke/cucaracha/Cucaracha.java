@@ -140,7 +140,7 @@ public class Cucaracha {
 	private void wire() {
 		logger.info("Wiring things...");
 
-		boolean runningOnPi = !System.getProperty("os.name").startsWith("Mac");
+		boolean runningOnPi = System.getProperty("os.arch").startsWith("arm");
 
 		if (runningOnPi) {
 			gpio = GpioFactory.getInstance();
