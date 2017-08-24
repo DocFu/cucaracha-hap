@@ -18,8 +18,18 @@ public class LightEltako extends BaseEltako implements Lightbulb {
 
 	@Override
 	public CompletableFuture<Void> setLightbulbPowerState(boolean powerState) throws Exception {
+
+		// set internal shared value, which may not always reflect the reality
 		setInternalPowerState(powerState);
+
+		try {
+			getEltakoOutput().pulse(500);
+		} catch (Exception e) {
+			System.out.println("Could not pulse pin: " + e);
+		}
+
 		powerStateChanged();
+
 		System.out.println("setLightbulbPowerState " + getId() + ":" + getLabel() + ":" + (powerState ? "on" : "off"));
 		return CompletableFuture.completedFuture(null);
 	}

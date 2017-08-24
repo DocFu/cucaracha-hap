@@ -27,18 +27,20 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	private boolean internalPowerState = false;
 
 	/**
+	 * @param gpio2
 	 * 
 	 */
-	public void wire() {
+	public void wire(final GpioController gpio) {
+		this.gpio = gpio;
 
 		if (getGpioPowerStateWriterPin() != -1) {
-			eltakoOutput = getGpio().provisionDigitalOutputPin(RaspiPin.getPinByAddress(getGpioPowerStateWriterPin()),
+			eltakoOutput = gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(getGpioPowerStateWriterPin()),
 					getHapLabel(), PinState.LOW);
 
 		}
 
 		if (getGpioPowerStateReaderPin() != -1) {
-			eltakoInput = getGpio().provisionDigitalInputPin(RaspiPin.getPinByAddress(getGpioPowerStateReaderPin()),
+			eltakoInput = gpio.provisionDigitalInputPin(RaspiPin.getPinByAddress(getGpioPowerStateReaderPin()),
 					getHapLabel() + "State", PinPullResistance.PULL_DOWN);
 
 			eltakoInput.addListener(new GpioPinListenerDigital() {
@@ -147,21 +149,6 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	@Override
 	public final String getManufacturer() {
 		return getHapManufacturer();
-	}
-
-	/**
-	 * @return the gpio
-	 */
-	public final GpioController getGpio() {
-		return gpio;
-	}
-
-	/**
-	 * @param gpio
-	 *            the gpio to set
-	 */
-	public final void setGpio(GpioController gpio) {
-		this.gpio = gpio;
 	}
 
 	/**

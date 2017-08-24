@@ -15,6 +15,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beowulfe.hap.HomekitAccessory;
 import com.beowulfe.hap.HomekitAuthInfo;
@@ -35,6 +37,8 @@ import de.plasmawolke.cucaracha.model.CucarachaConfig;
  * @author Arne Schueler
  */
 public class Cucaracha {
+
+	private final static Logger logger = LoggerFactory.getLogger(Cucaracha.class);
 
 	public static final File BASE_DIR = new File(System.getProperty("user.home") + "/.cucaracha/");
 	private static final File AUTH_INFO_FILE = new File(BASE_DIR, "auth-info.ser");
@@ -75,22 +79,25 @@ public class Cucaracha {
 	 */
 	private void init() throws IOException, JAXBException {
 
+		logger.info("Intializing configuration...");
+
 		if (!BASE_DIR.exists()) {
 			BASE_DIR.mkdirs();
+			logger.debug("Creating base directory " + BASE_DIR);
 		}
 
 		// try to get config from file
 		// if config file exists, try to read and set config
 		// else create a new file from a new CucarachaConfig instance
 		if (CONFIG_FILE.exists()) {
-
+			logger.info("Loading existing config file " + CONFIG_FILE);
 			Unmarshaller unmarshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class })
 					.createUnmarshaller();
 			cfg = (CucarachaConfig) unmarshaller.unmarshal(CONFIG_FILE);
 
-			System.out.println("Using configiguration [" + CONFIG_FILE + "].");
-
+			logger.info("Loaded config file succesfully.");
 		} else {
+			logger.info("Creating new a config file " + CONFIG_FILE);
 			cfg = new CucarachaConfig();
 
 			CucarachaAccessory sampleAccessory1 = new CucarachaAccessory();
@@ -115,43 +122,49 @@ public class Cucaracha {
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.marshal(cfg, CONFIG_FILE);
 
-			System.out.println("Created new configuration [" + CONFIG_FILE
-					+ "] with example values. Please edit the file according to your needs and restart.");
+			logger.warn("Created new configuration [" + CONFIG_FILE
+					+ "] with example values. Please edit the file according to your needs and restart!");
 			System.exit(0);
 		}
 
-		System.out.println(cfg.print());
+		logger.info("====== CONFIG BEGIN======");
+		logger.info(cfg.print());
+		logger.info("====== CONFIG END======");
+
+		logger.info("Intializing configuration done!");
 	}
 
 	/**
 	 * Wire GPIO to HAP an vice versa by information from config
 	 */
 	private void wire() {
+		logger.info("Wiring things...");
 
-		boolean runningOnPi = false;
+		boolean runningOnPi = !System.getProperty("os.name").startsWith("Mac");
 
 		if (runningOnPi) {
 			gpio = GpioFactory.getInstance();
 		} else {
-			System.out.println("Wrong platform - using GPIO Mock!");
+			logger.warn("Wrong platform detected! Using GPIO Mock. Expect some Null Pointers...");
 			gpio = new MockGpioController();
 		}
 
 		List<CucarachaAccessory> configAccessories = cfg.getAccessories();
+		logger.info(configAccessories.size() + " accesories will be wired...");
 
 		for (CucarachaAccessory cucarachaAccessory : configAccessories) {
+			logger.debug("Preparing accessory " + cucarachaAccessory.getHapId() + "...");
 
 			switch (cucarachaAccessory.getType()) {
 				case OUTLET:
 
 					OutletEltako outletEltako = new OutletEltako();
-					outletEltako.setGpio(gpio);
 					outletEltako.setHapId(cucarachaAccessory.getHapId());
 					outletEltako.setHapLabel(cucarachaAccessory.getHapLabel());
 					outletEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
 					outletEltako.setHapModel(cucarachaAccessory.getHapModel());
 					outletEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
-					outletEltako.wire();
+					outletEltako.wire(gpio);
 					accessories.add(outletEltako);
 
 					break;
@@ -159,13 +172,12 @@ public class Cucaracha {
 				case LIGHT:
 
 					LightEltako lightEltako = new LightEltako();
-					lightEltako.setGpio(gpio);
 					lightEltako.setHapId(cucarachaAccessory.getHapId());
 					lightEltako.setHapLabel(cucarachaAccessory.getHapLabel());
 					lightEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
 					lightEltako.setHapModel(cucarachaAccessory.getHapModel());
 					lightEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
-					lightEltako.wire();
+					lightEltako.wire(gpio);
 					accessories.add(lightEltako);
 
 					break;
@@ -174,7 +186,11 @@ public class Cucaracha {
 					break;
 			}
 
+			logger.debug("Ok");
+
 		}
+
+		logger.info("Wiring things done!");
 
 	}
 
@@ -227,6 +243,7 @@ public class Cucaracha {
 	 * @throws InvalidAlgorithmParameterException
 	 */
 	private void startHomekitBridge() throws IOException, InvalidAlgorithmParameterException {
+		logger.info("Starting Homekit Bridge...");
 		HomekitServer homekit = new HomekitServer(cfg.getBridgePort());
 		HomekitAuthInfo authInfo = createHomekitAuthInfo();
 		HomekitRoot bridge = homekit.createBridge(authInfo, cfg.getBridgeName(), cfg.getBridgeVendor(),
@@ -236,6 +253,7 @@ public class Cucaracha {
 			bridge.addAccessory(homekitAccessory);
 		}
 		bridge.start();
+		logger.info("Starting Homekit Bridge done!");
 	}
 
 	/**
