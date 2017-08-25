@@ -33,7 +33,7 @@ public class OutletEltako extends BaseEltako implements Outlet {
 
 		try {
 			logger.info("Pulsing PIN " + getOutputPin() + " Output: " + getEltakoInput());
-			getEltakoOutput().pulse(500);
+			getEltakoOutput().pulse(200);
 		} catch (Exception e) {
 			System.out.println("Could not pulse pin: " + e);
 		}

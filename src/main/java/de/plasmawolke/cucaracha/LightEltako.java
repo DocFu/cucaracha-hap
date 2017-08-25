@@ -29,7 +29,7 @@ public class LightEltako extends BaseEltako implements Lightbulb {
 		setInternalPowerState(powerState);
 
 		try {
-			getEltakoOutput().pulse(500);
+			getEltakoOutput().pulse(200);
 		} catch (Exception e) {
 			System.out.println("Could not pulse pin: " + e);
 		}
