@@ -33,6 +33,17 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	// Shared
 	private boolean internalPowerState = false;
 
+	public BaseEltako(CucarachaAccessory cucarachaAccessory) {
+		setGpioPowerStateWriterPin(cucarachaAccessory.getGpioPowerStateWriterPin());
+		setGpioPowerStateReaderPin(cucarachaAccessory.getGpioPowerStateReaderPin());
+
+		setHapId(cucarachaAccessory.getHapId());
+		setHapLabel(cucarachaAccessory.getHapLabel());
+		setHapManufacturer(cucarachaAccessory.getHapManufacturer());
+		setHapModel(cucarachaAccessory.getHapModel());
+		setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+	}
+
 	/**
 	 * @param gpio2
 	 * 
@@ -40,9 +51,12 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	public void wire(final GpioController gpio) {
 		this.gpio = gpio;
 
+		logger.info("Wiring with GpioController: " + gpio);
+		logger.info("getGpioPowerStateWriterPin() = " + getGpioPowerStateWriterPin());
+
 		if (getGpioPowerStateWriterPin() != -1) {
 			outputPin = RaspiPin.getPinByAddress(getGpioPowerStateWriterPin());
-			logger.info("Wiring PowerStateWriterPin = " + getGpioPowerStateReaderPin() + " = " + outputPin);
+			logger.info("Wiring PowerStateWriterPin = " + getGpioPowerStateWriterPin() + " = " + outputPin);
 			eltakoOutput = gpio.provisionDigitalOutputPin(outputPin, getHapLabel(), PinState.LOW);
 
 		}
@@ -51,24 +65,27 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 			eltakoInput = gpio.provisionDigitalInputPin(RaspiPin.getPinByAddress(getGpioPowerStateReaderPin()),
 					getHapLabel() + "State", PinPullResistance.PULL_DOWN);
 
-			eltakoInput.addListener(new GpioPinListenerDigital() {
+			if (eltakoInput != null) {
 
-				@Override
-				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+				eltakoInput.addListener(new GpioPinListenerDigital() {
 
-					// display pin state on console
-					System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
+					@Override
+					public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 
-					if (event.getState().isHigh()) {
-						internalPowerState = true;
-					} else {
-						internalPowerState = false;
+						// display pin state on console
+						System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
+
+						if (event.getState().isHigh()) {
+							internalPowerState = true;
+						} else {
+							internalPowerState = false;
+						}
+
+						powerStateChanged();
+
 					}
-
-					powerStateChanged();
-
-				}
-			});
+				});
+			}
 		}
 
 	}

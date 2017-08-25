@@ -5,11 +5,17 @@ import java.util.concurrent.CompletableFuture;
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Lightbulb;
 
+import de.plasmawolke.cucaracha.model.CucarachaAccessory;
+
 /**
  * Some kind of latching switch relais
  * @author Arne Schueler
  */
 public class LightEltako extends BaseEltako implements Lightbulb {
+
+	public LightEltako(CucarachaAccessory cucarachaAccessory) {
+		super(cucarachaAccessory);
+	}
 
 	@Override
 	public CompletableFuture<Boolean> getLightbulbPowerState() {

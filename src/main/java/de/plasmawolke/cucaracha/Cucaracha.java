@@ -161,12 +161,7 @@ public class Cucaracha {
 			switch (cucarachaAccessory.getType()) {
 				case OUTLET:
 
-					OutletEltako outletEltako = new OutletEltako();
-					outletEltako.setHapId(cucarachaAccessory.getHapId());
-					outletEltako.setHapLabel(cucarachaAccessory.getHapLabel());
-					outletEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
-					outletEltako.setHapModel(cucarachaAccessory.getHapModel());
-					outletEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					OutletEltako outletEltako = new OutletEltako(cucarachaAccessory);
 					outletEltako.wire(gpio);
 					accessories.add(outletEltako);
 
@@ -174,12 +169,7 @@ public class Cucaracha {
 
 				case LIGHT:
 
-					LightEltako lightEltako = new LightEltako();
-					lightEltako.setHapId(cucarachaAccessory.getHapId());
-					lightEltako.setHapLabel(cucarachaAccessory.getHapLabel());
-					lightEltako.setHapManufacturer(cucarachaAccessory.getHapManufacturer());
-					lightEltako.setHapModel(cucarachaAccessory.getHapModel());
-					lightEltako.setHapSerialNo(cucarachaAccessory.getHapSerialNo());
+					LightEltako lightEltako = new LightEltako(cucarachaAccessory);
 					lightEltako.wire(gpio);
 					accessories.add(lightEltako);
 

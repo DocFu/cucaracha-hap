@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Outlet;
 
+import de.plasmawolke.cucaracha.model.CucarachaAccessory;
+
 /**
  * Some kind of latching switch relais
  * @author Arne Schueler
@@ -15,6 +17,10 @@ import com.beowulfe.hap.accessories.Outlet;
 public class OutletEltako extends BaseEltako implements Outlet {
 
 	private final static Logger logger = LoggerFactory.getLogger(OutletEltako.class);
+
+	public OutletEltako(CucarachaAccessory cucarachaAccessory) {
+		super(cucarachaAccessory);
+	}
 
 	/**
 	 * Called by HAP API implementation

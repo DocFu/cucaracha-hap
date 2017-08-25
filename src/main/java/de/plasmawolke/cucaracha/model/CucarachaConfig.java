@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 /**
@@ -156,7 +157,16 @@ public class CucarachaConfig {
 	}
 
 	public String print() {
-		return ReflectionToStringBuilder.toString(this);
+
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(ReflectionToStringBuilder.toString(this));
+		buffer.append(StringUtils.CR);
+		for (CucarachaAccessory cucarachaAccessory : accessories) {
+			buffer.append(ReflectionToStringBuilder.toString(cucarachaAccessory));
+			buffer.append(StringUtils.CR);
+		}
+
+		return buffer.toString();
 	}
 
 }
