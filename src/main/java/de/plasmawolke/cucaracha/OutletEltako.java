@@ -2,6 +2,9 @@ package de.plasmawolke.cucaracha;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Outlet;
 
@@ -10,6 +13,8 @@ import com.beowulfe.hap.accessories.Outlet;
  * @author Arne Schueler
  */
 public class OutletEltako extends BaseEltako implements Outlet {
+
+	private final static Logger logger = LoggerFactory.getLogger(OutletEltako.class);
 
 	/**
 	 * Called by HAP API implementation
@@ -21,6 +26,7 @@ public class OutletEltako extends BaseEltako implements Outlet {
 		setInternalPowerState(state);
 
 		try {
+			logger.info("Pulsing PIN " + getOutputPin() + " Output: " + getEltakoInput());
 			getEltakoOutput().pulse(500);
 		} catch (Exception e) {
 			System.out.println("Could not pulse pin: " + e);
