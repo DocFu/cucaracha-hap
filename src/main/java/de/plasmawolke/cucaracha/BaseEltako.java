@@ -1,10 +1,14 @@
 package de.plasmawolke.cucaracha;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beowulfe.hap.HomekitAccessory;
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
@@ -15,6 +19,8 @@ import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 
 public abstract class BaseEltako extends CucarachaAccessory implements HomekitAccessory {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	// HAP 
 	private HomekitCharacteristicChangeCallback powerStateChangeCallback = null;
 
@@ -22,6 +28,7 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	private GpioController gpio;
 	private GpioPinDigitalOutput eltakoOutput;
 	private GpioPinDigitalInput eltakoInput;
+	private Pin outputPin;
 
 	// Shared
 	private boolean internalPowerState = false;
@@ -34,8 +41,9 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 		this.gpio = gpio;
 
 		if (getGpioPowerStateWriterPin() != -1) {
-			eltakoOutput = gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(getGpioPowerStateWriterPin()),
-					getHapLabel(), PinState.LOW);
+			outputPin = RaspiPin.getPinByAddress(getGpioPowerStateWriterPin());
+			logger.info("Wiring PowerStateWriterPin = " + getGpioPowerStateReaderPin() + " = " + outputPin);
+			eltakoOutput = gpio.provisionDigitalOutputPin(outputPin, getHapLabel(), PinState.LOW);
 
 		}
 
@@ -179,6 +187,13 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 	 */
 	public final void setEltakoInput(GpioPinDigitalInput eltakoInput) {
 		this.eltakoInput = eltakoInput;
+	}
+
+	/**
+	 * @return the outputPin
+	 */
+	public final Pin getOutputPin() {
+		return outputPin;
 	}
 
 }
