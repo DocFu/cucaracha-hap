@@ -19,8 +19,8 @@ public class CucarachaConfig {
 
 	private int bridgePort = 9123;
 	private String bridgeHost = "192.168.1.2";
-	private String bridgePin = "000-00-000";
-	private String bridgeName = "CucaTestBridge";
+	private String bridgePin = "123-45-678";
+	private String bridgeName = "Bridge " + String.valueOf(System.currentTimeMillis()).substring(10);
 	private String bridgeVendor = "DocFu Inc.";
 	private String bridgeVersion = "2017.1";
 	private String bridgeSerialNo = "0000";
@@ -29,7 +29,7 @@ public class CucarachaConfig {
 	public CucarachaConfig() {
 
 		try {
-			bridgeHost = InetAddress.getLocalHost().getHostName();
+			bridgeHost = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 
 		}

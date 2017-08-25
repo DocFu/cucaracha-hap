@@ -6,12 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -269,6 +265,23 @@ public class Cucaracha {
 		}
 		bridge.start();
 		logger.info("Starting Homekit Bridge done!");
+
+		printPinBox();
+	}
+
+	/**
+	 * Nice try ;-)
+	 */
+	private void printPinBox() {
+		System.out.println();
+		System.out.println();
+		System.out.println();
+		System.out.println("                ┌────────────┐");
+		System.out.println("                │ " + cfg.getBridgePin() + " │");
+		System.out.println("                └────────────┘");
+		System.out.println();
+		System.out.println();
+		System.out.println();
 	}
 
 	/**
@@ -276,32 +289,6 @@ public class Cucaracha {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
-		try {
-			System.out.println("Host addr: " + InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} // often returns "127.0.0.1"
-		Enumeration<NetworkInterface> n = null;
-		try {
-			n = NetworkInterface.getNetworkInterfaces();
-		} catch (SocketException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		while (n.hasMoreElements()) {
-			NetworkInterface e = (NetworkInterface) n.nextElement();
-
-			System.out.println("Interface: " + e.getName());
-			Enumeration<InetAddress> a = e.getInetAddresses();
-			for (; a.hasMoreElements();) {
-				InetAddress addr = a.nextElement();
-				System.out.println("  " + addr.getHostAddress());
-			}
-
-		}
-
 		new Cucaracha();
 	}
 
