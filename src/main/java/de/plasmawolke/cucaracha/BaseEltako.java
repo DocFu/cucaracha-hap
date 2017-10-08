@@ -57,7 +57,7 @@ public abstract class BaseEltako extends CucarachaAccessory implements HomekitAc
 		if (getGpioPowerStateWriterPin() != -1) {
 			outputPin = RaspiPin.getPinByAddress(getGpioPowerStateWriterPin());
 			logger.info("Wiring PowerStateWriterPin = " + getGpioPowerStateWriterPin() + " = " + outputPin);
-			eltakoOutput = gpio.provisionDigitalOutputPin(outputPin, getHapLabel(), PinState.LOW);
+			eltakoOutput = gpio.provisionDigitalOutputPin(outputPin, getHapLabel(), PinState.HIGH);
 
 		}
 
