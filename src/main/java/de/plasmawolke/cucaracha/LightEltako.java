@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Lightbulb;
+import com.pi4j.io.gpio.PinState;
 
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 
@@ -29,7 +30,8 @@ public class LightEltako extends BaseEltako implements Lightbulb {
 		setInternalPowerState(powerState);
 
 		try {
-			getEltakoOutput().pulse(200);
+
+			getEltakoOutput().pulse(200, PinState.LOW);
 		} catch (Exception e) {
 			System.out.println("Could not pulse pin: " + e);
 		}

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Outlet;
+import com.pi4j.io.gpio.PinState;
 
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 
@@ -33,7 +34,7 @@ public class OutletEltako extends BaseEltako implements Outlet {
 
 		try {
 			logger.info("Pulsing PIN " + getOutputPin() + " Output: " + getEltakoInput());
-			getEltakoOutput().pulse(200);
+			getEltakoOutput().pulse(200, PinState.LOW);
 		} catch (Exception e) {
 			System.out.println("Could not pulse pin: " + e);
 		}
