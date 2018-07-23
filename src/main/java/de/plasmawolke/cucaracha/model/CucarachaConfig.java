@@ -19,11 +19,11 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 public class CucarachaConfig {
 
 	private int bridgePort = 9123;
-	private String bridgeHost = "192.168.1.2";
+	private String bridgeHost = "10.1.15.34";
 	private String bridgePin = "123-45-678";
 	private String bridgeName = "Bridge " + String.valueOf(System.currentTimeMillis()).substring(10);
 	private String bridgeVendor = "DocFu Inc.";
-	private String bridgeVersion = "2017.1";
+	private String bridgeVersion = "2018.1";
 	private String bridgeSerialNo = "0000";
 	private List<CucarachaAccessory> accessories = new ArrayList<>();
 
