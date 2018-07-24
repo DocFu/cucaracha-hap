@@ -1,4 +1,4 @@
-package de.plasmawolke.cucaracha;
+package de.plasmawolke.cucaracha.gpio;
 
 import java.util.Collection;
 

@@ -27,9 +27,14 @@ import com.beowulfe.hap.impl.HomekitBridge;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 
+import de.plasmawolke.cucaracha.gpio.LightEltako;
+import de.plasmawolke.cucaracha.gpio.MockGpioController;
+import de.plasmawolke.cucaracha.gpio.OutletEltako;
 import de.plasmawolke.cucaracha.model.AccessoryType;
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 import de.plasmawolke.cucaracha.model.CucarachaConfig;
+import de.plasmawolke.cucaracha.wsqlcplusdmx.ButtonCollector;
+import de.plasmawolke.cucaracha.wsqlcplusdmx.VirtualConsoleButton;
 
 /**
  * Cucaracha is a {@link HomekitBridge} running on a Raspberry PI wired with
@@ -41,7 +46,7 @@ public class Cucaracha {
 
 	private final static Logger logger = LoggerFactory.getLogger(Cucaracha.class);
 
-	public static final File BASE_DIR = new File(System.getProperty("user.home") + "/.cucaracha/");
+	public static final File BASE_DIR = new File(System.getProperty("user.home") + "/.kw30-hap-server/");
 	private static final File AUTH_INFO_FILE = new File(BASE_DIR, "auth-info.ser");
 	private static final File CONFIG_FILE = new File(BASE_DIR, "config.xml");
 
@@ -64,12 +69,52 @@ public class Cucaracha {
 			// Wire GPIO
 			wire();
 
+			wireDmx();
+
 			// Start HAP stuff
 			startHomekitBridge();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void wireDmx() {
+
+		ButtonCollector bc = new ButtonCollector();
+		try {
+			bc.populate();
+		} catch (Exception e) {
+			logger.error("Could not populate buttons: ", e);
+			return;
+		}
+
+		List<VirtualConsoleButton> buttons = bc.getButtons();
+
+		if (buttons.isEmpty()) {
+			logger.info("No QLC+ buttons found!");
+		}
+
+		int hapId = 100;
+		for (VirtualConsoleButton button : buttons) {
+
+			CucarachaAccessory cucarachaAccessory = new CucarachaAccessory();
+			cucarachaAccessory.setHapId(hapId);
+			cucarachaAccessory.setQlcPlusControlId(button.getId());
+			cucarachaAccessory.setHapLabel(button.getName());
+			cucarachaAccessory.setHapModel("HomeKit-QLC+ Bridge Accessory");
+
+			de.plasmawolke.cucaracha.wsqlcplusdmx.Switch dmxSwitch = new de.plasmawolke.cucaracha.wsqlcplusdmx.Switch(
+					cucarachaAccessory);
+
+			dmxSwitch.setInternalPowerState(button.isEnabled());
+
+			accessories.add(dmxSwitch);
+
+			hapId++;
+
+		}
+
 	}
 
 	/**
@@ -104,22 +149,31 @@ public class Cucaracha {
 			cfg = new CucarachaConfig();
 
 			CucarachaAccessory sampleAccessory1 = new CucarachaAccessory();
-			sampleAccessory1.setType(AccessoryType.OUTLET);
+			sampleAccessory1.setType(AccessoryType.LIGHT);
 			sampleAccessory1.setHapId(2);
-			sampleAccessory1.setHapLabel("My Outlet");
-			sampleAccessory1.setGpioPowerStateWriterPin(0);
-			sampleAccessory1.setGpioPowerStateReaderPin(1);
-
+			sampleAccessory1.setHapLabel("Baulicht");
+			sampleAccessory1.setQlcPlusControlId(0);
+			//sampleAccessory1.setGpioPowerStateWriterPin(0);
+			//sampleAccessory1.setGpioPowerStateReaderPin(1);
 			cfg.getAccessories().add(sampleAccessory1);
 
 			CucarachaAccessory sampleAccessory2 = new CucarachaAccessory();
 			sampleAccessory2.setType(AccessoryType.LIGHT);
 			sampleAccessory2.setHapId(3);
-			sampleAccessory2.setHapLabel("My Light");
-			sampleAccessory2.setGpioPowerStateWriterPin(2);
-			sampleAccessory2.setGpioPowerStateReaderPin(3);
-
+			sampleAccessory2.setHapLabel("Rote Stimmung");
+			//sampleAccessory2.setGpioPowerStateWriterPin(2);
+			//sampleAccessory2.setGpioPowerStateReaderPin(3);
+			sampleAccessory2.setQlcPlusControlId(0);
 			cfg.getAccessories().add(sampleAccessory2);
+
+			CucarachaAccessory sampleAccessory3 = new CucarachaAccessory();
+			sampleAccessory3.setType(AccessoryType.LIGHT);
+			sampleAccessory3.setHapId(4);
+			sampleAccessory3.setHapLabel("Grüne Stimmung");
+			//sampleAccessory2.setGpioPowerStateWriterPin(2);
+			//sampleAccessory2.setGpioPowerStateReaderPin(3);
+			sampleAccessory3.setQlcPlusControlId(0);
+			cfg.getAccessories().add(sampleAccessory3);
 
 			Marshaller marshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class }).createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -157,6 +211,11 @@ public class Cucaracha {
 
 		for (CucarachaAccessory cucarachaAccessory : configAccessories) {
 			logger.debug("Preparing accessory " + cucarachaAccessory.getHapId() + "...");
+
+			if (cucarachaAccessory.getGpioPowerStateReaderPin() == -1
+					&& cucarachaAccessory.getGpioPowerStateWriterPin() == -1) {
+				continue;
+			}
 
 			switch (cucarachaAccessory.getType()) {
 				case OUTLET:

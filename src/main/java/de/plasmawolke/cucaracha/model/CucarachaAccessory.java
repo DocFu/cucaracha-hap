@@ -15,6 +15,9 @@ public class CucarachaAccessory {
 	private int gpioPowerStateWriterPin = -1;
 	private int gpioPowerStateReaderPin = -1; // kind of optional
 
+	// ws-qlcplus-dmx control id
+	private int qlcPlusControlId = -1;
+
 	/**
 	 * @return the hapId
 	 */
@@ -133,6 +136,21 @@ public class CucarachaAccessory {
 	 */
 	public final void setGpioPowerStateReaderPin(int gpioPowerStateReaderPin) {
 		this.gpioPowerStateReaderPin = gpioPowerStateReaderPin;
+	}
+
+	/**
+	 * @return the qlcPlusControlId
+	 */
+	public final int getQlcPlusControlId() {
+		return qlcPlusControlId;
+	}
+
+	/**
+	 * @param qlcPlusControlId
+	 *            the qlcPlusControlId to set
+	 */
+	public final void setQlcPlusControlId(int qlcPlusControlId) {
+		this.qlcPlusControlId = qlcPlusControlId;
 	}
 
 }
