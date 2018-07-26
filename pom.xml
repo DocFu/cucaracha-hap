@@ -95,6 +95,8 @@
 						</goals>
 						<configuration>
 							<appClass>de.plasmawolke.cucaracha.Cucaracha</appClass>
+							<fileName>fozzygarden-homekit-bridge</fileName>
+							<fileDesc>-app</fileDesc>
 							<type>fat</type>
 						</configuration>
 					</execution>

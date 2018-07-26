@@ -6,16 +6,30 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beowulfe.hap.HomekitCharacteristicChangeCallback;
 import com.beowulfe.hap.accessories.Lightbulb;
 
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
+import de.plasmawolke.cucaracha.model.CucarachaConfig;
 
-public class Switch extends BaseControl implements Lightbulb {
+public class QlcButtonControl extends BaseControl implements Lightbulb {
 
-	public Switch(CucarachaAccessory cucarachaAccessory) {
+	private final static Logger logger = LoggerFactory.getLogger(QlcButtonControl.class);
+
+	private VirtualConsoleButton button = null;
+	private CucarachaConfig cfg = null;
+
+	public int getQlcId() {
+		return button.getId();
+	}
+
+	public QlcButtonControl(CucarachaConfig cfg, CucarachaAccessory cucarachaAccessory, VirtualConsoleButton button) {
 		super(cucarachaAccessory);
+		this.button = button;
+		this.cfg = cfg;
 	}
 
 	@Override
@@ -26,17 +40,17 @@ public class Switch extends BaseControl implements Lightbulb {
 	@Override
 	public CompletableFuture<Void> setLightbulbPowerState(boolean powerState) throws Exception {
 
-		System.out.println("DMX: " + getQlcPlusControlId() + " new powerState +" + powerState);
+		logger.info("Setting light state for QLC+ Button " + button.getName() + ". New powerState +" + powerState);
 
-		String message1 = getQlcPlusControlId() + "|0";
-		String message2 = getQlcPlusControlId() + "|255";
+		String message1 = button.getId() + "|0";
+		String message2 = button.getId() + "|255";
 
 		/// ----
 
-		String destUri = "ws://schneestreamchen.local:9999/qlcplusWS";
+		String destUri = cfg.buildQlcPlusWsUrl();
 
 		WebSocketClient client = new WebSocketClient();
-		SimpleEchoSocket socket = new SimpleEchoSocket();
+		QlcWebSocket socket = new QlcWebSocket();
 		socket.setControl(this);
 
 		socket.setMessage1(message1);
@@ -48,17 +62,17 @@ public class Switch extends BaseControl implements Lightbulb {
 			URI echoUri = new URI(destUri);
 			ClientUpgradeRequest request = new ClientUpgradeRequest();
 			client.connect(socket, echoUri, request);
-			System.out.printf("Connecting to : %s%n", echoUri);
+			logger.info("Connecting to : %s%n", echoUri);
 
 			// wait for closed socket connection.
 			socket.awaitClose(1, TimeUnit.SECONDS);
 		} catch (Throwable t) {
-			t.printStackTrace();
+			logger.error("Could not speak with websocket:", t);
 		} finally {
 			try {
 				client.stop();
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Could not stop websocket client:", e);
 			}
 		}
 

@@ -12,15 +12,17 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.plasmawolke.cucaracha.model.CucarachaConfig;
+
 public class ButtonCollector {
 
 	private final static Logger logger = LoggerFactory.getLogger(ButtonCollector.class);
 
-	private String url = "http://schneestreamchen.local:9999/";
-
 	private List<VirtualConsoleButton> buttons = new ArrayList<>();
 
-	public void populate() throws Exception {
+	public void populate(String url) throws Exception {
+
+		logger.info("Populating buttons from " + url);
 
 		// Instantiate HttpClient
 		HttpClient httpClient = new HttpClient();
@@ -39,6 +41,9 @@ public class ButtonCollector {
 
 		org.jsoup.nodes.Document doc = Jsoup.parse(html);
 		Elements links = doc.select("a.vcbutton");
+
+		logger.info("Found " + links.size() + " buttons.");
+
 		for (Element element : links) {
 
 			String id = element.attr("id");
@@ -55,7 +60,7 @@ public class ButtonCollector {
 
 				buttons.add(vcb);
 
-				System.out.println(id + " " + enabled + " --> " + name);
+				logger.info("Added " + name + " (" + id + ") with state " + enabled);
 			}
 
 		}
@@ -68,8 +73,8 @@ public class ButtonCollector {
 
 	public static void main(String[] args) throws Exception {
 		ButtonCollector bc = new ButtonCollector();
-		bc.populate();
-		System.out.println(bc.getButtons().size());
+		bc.populate(new CucarachaConfig().buildQlcPlusVirtualConsoleUrl());
+
 	}
 
 }

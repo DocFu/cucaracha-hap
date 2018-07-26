@@ -83,7 +83,7 @@ public class Cucaracha {
 
 		ButtonCollector bc = new ButtonCollector();
 		try {
-			bc.populate();
+			bc.populate(cfg.buildQlcPlusVirtualConsoleUrl());
 		} catch (Exception e) {
 			logger.error("Could not populate buttons: ", e);
 			return;
@@ -95,23 +95,22 @@ public class Cucaracha {
 			logger.info("No QLC+ buttons found!");
 		}
 
-		int hapId = 100;
+		int hapIdBase = 100;
 		for (VirtualConsoleButton button : buttons) {
+
+			int hapId = hapIdBase + button.getId();
 
 			CucarachaAccessory cucarachaAccessory = new CucarachaAccessory();
 			cucarachaAccessory.setHapId(hapId);
-			cucarachaAccessory.setQlcPlusControlId(button.getId());
 			cucarachaAccessory.setHapLabel(button.getName());
 			cucarachaAccessory.setHapModel("HomeKit-QLC+ Bridge Accessory");
 
-			de.plasmawolke.cucaracha.wsqlcplusdmx.Switch dmxSwitch = new de.plasmawolke.cucaracha.wsqlcplusdmx.Switch(
-					cucarachaAccessory);
+			de.plasmawolke.cucaracha.wsqlcplusdmx.QlcButtonControl dmxSwitch = new de.plasmawolke.cucaracha.wsqlcplusdmx.QlcButtonControl(
+					cfg, cucarachaAccessory, button);
 
 			dmxSwitch.setInternalPowerState(button.isEnabled());
 
 			accessories.add(dmxSwitch);
-
-			hapId++;
 
 		}
 
@@ -152,7 +151,7 @@ public class Cucaracha {
 			sampleAccessory1.setType(AccessoryType.LIGHT);
 			sampleAccessory1.setHapId(2);
 			sampleAccessory1.setHapLabel("Baulicht");
-			sampleAccessory1.setQlcPlusControlId(0);
+
 			//sampleAccessory1.setGpioPowerStateWriterPin(0);
 			//sampleAccessory1.setGpioPowerStateReaderPin(1);
 			cfg.getAccessories().add(sampleAccessory1);
@@ -163,7 +162,7 @@ public class Cucaracha {
 			sampleAccessory2.setHapLabel("Rote Stimmung");
 			//sampleAccessory2.setGpioPowerStateWriterPin(2);
 			//sampleAccessory2.setGpioPowerStateReaderPin(3);
-			sampleAccessory2.setQlcPlusControlId(0);
+
 			cfg.getAccessories().add(sampleAccessory2);
 
 			CucarachaAccessory sampleAccessory3 = new CucarachaAccessory();
@@ -172,7 +171,7 @@ public class Cucaracha {
 			sampleAccessory3.setHapLabel("Grüne Stimmung");
 			//sampleAccessory2.setGpioPowerStateWriterPin(2);
 			//sampleAccessory2.setGpioPowerStateReaderPin(3);
-			sampleAccessory3.setQlcPlusControlId(0);
+
 			cfg.getAccessories().add(sampleAccessory3);
 
 			Marshaller marshaller = JAXBContext.newInstance(new Class[] { CucarachaConfig.class }).createMarshaller();

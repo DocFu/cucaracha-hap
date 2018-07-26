@@ -15,8 +15,6 @@ public abstract class BaseControl extends CucarachaAccessory implements HomekitA
 
 	public BaseControl(CucarachaAccessory cucarachaAccessory) {
 
-		setQlcPlusControlId(cucarachaAccessory.getQlcPlusControlId());
-
 		setHapId(cucarachaAccessory.getHapId());
 		setHapLabel(cucarachaAccessory.getHapLabel());
 		setHapManufacturer(cucarachaAccessory.getHapManufacturer());

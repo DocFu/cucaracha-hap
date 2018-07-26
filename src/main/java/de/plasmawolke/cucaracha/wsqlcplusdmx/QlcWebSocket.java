@@ -10,25 +10,29 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basic Echo Client Socket
  */
 @WebSocket(maxTextMessageSize = 64 * 1024)
-public class SimpleEchoSocket {
+public class QlcWebSocket {
+
+	private final static Logger logger = LoggerFactory.getLogger(QlcWebSocket.class);
 
 	private String message1 = null;
 	private String message2 = null;
 
 	private String responseMessage = null;
 
-	private BaseControl control;
+	private QlcButtonControl control = null;
 
 	private final CountDownLatch closeLatch;
 	@SuppressWarnings("unused")
 	private Session session;
 
-	public SimpleEchoSocket() {
+	public QlcWebSocket() {
 		this.closeLatch = new CountDownLatch(1);
 	}
 
@@ -38,14 +42,16 @@ public class SimpleEchoSocket {
 
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {
-		System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
+		logger.info("Connection closed: %d - %s%n", statusCode, reason);
+
 		this.session = null;
 		this.closeLatch.countDown(); // trigger latch
 	}
 
 	@OnWebSocketConnect
 	public void onConnect(Session session) {
-		System.out.printf("Got connect: %s%n", session);
+		logger.info("Got connect: %s%n", session);
+
 		this.session = session;
 		try {
 			Future<Void> fut;
@@ -94,7 +100,7 @@ public class SimpleEchoSocket {
 	@OnWebSocketMessage
 	public void onMessage(String message) {
 
-		System.out.println("Got message '" + message + "'");
+		logger.info("Got message '" + message + "'");
 
 		int id = 38;
 		String name = "BUTTON";
@@ -106,59 +112,23 @@ public class SimpleEchoSocket {
 		name = parts[1];
 		value = Integer.parseInt(parts[2]);
 
-		System.out.println("Parsed message;");
-		System.out.println("id=" + id);
-		System.out.println("name=" + name);
-		System.out.println("value=" + value);
-
-		//		List<String> parts = new ArrayList<>();
-		//
-		//		int old_i = 0;
-		//
-		//		for (int i = 0; i < messageB.length; i++) {
-		//			System.out.println(messageB[i]);
-		//			if (124 == messageB[i]) {
-		//
-		//				id = message.substring(0, i);
-		//				old_i = i + 1;
-		//
-		//				break;
-		//			}
-		//
-		//		}
-		//
-		//		System.out.println("old_i=" + old_i);
-		//
-		//		for (int i = old_i; i < messageB.length; i++) {
-		//			System.out.println(messageB[i]);
-		//
-		//			if (124 == messageB[i]) {
-		//
-		//				value = message.substring(i + 1, messageB.length);
-		//
-		//				System.out.println(id + "=" + value);
-		//
-		//				break;
-		//			}
-		//
-		//		}
-		//
-		//		System.out.println(parts);
-		//
-		// ---------------
+		logger.info("Parsed message;");
+		logger.info("id=" + id);
+		logger.info("name=" + name);
+		logger.info("value=" + value);
 
 		synchronized (control) {
 
 			// 0|BUTTON|255
 
-			if (id == control.getQlcPlusControlId()) {
+			if (id == control.getQlcId()) {
 
 				if (value == 255) {
 					control.setInternalPowerState(true);
-					System.out.println("Setting on " + id);
+					logger.info("Setting on " + id);
 				} else {
 					control.setInternalPowerState(false);
-					System.out.println("Setting off " + id);
+					logger.info("Setting off " + id);
 				}
 
 				control.getPowerStateChangeCallback().changed();
@@ -195,7 +165,7 @@ public class SimpleEchoSocket {
 	 * @param control
 	 *            the control to set
 	 */
-	public final void setControl(BaseControl control) {
+	public final void setControl(QlcButtonControl control) {
 		this.control = control;
 	}
 

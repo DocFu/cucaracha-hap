@@ -25,6 +25,10 @@ public class CucarachaConfig {
 	private String bridgeVendor = "DocFu Inc.";
 	private String bridgeVersion = "2018.1";
 	private String bridgeSerialNo = "0000";
+
+	private String qlcPlusHost = "schneestreamchen.local";
+	private String qlcPlusPort = "9999";
+
 	private List<CucarachaAccessory> accessories = new ArrayList<>();
 
 	public CucarachaConfig() {
@@ -34,6 +38,26 @@ public class CucarachaConfig {
 		} catch (UnknownHostException e) {
 
 		}
+	}
+
+	public String buildQlcPlusWsUrl() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("ws://");
+		sb.append(getQlcPlusHost());
+		sb.append(":");
+		sb.append(getQlcPlusPort());
+		sb.append("/qlcplusWS");
+		return sb.toString();
+	}
+
+	public String buildQlcPlusVirtualConsoleUrl() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("http://");
+		sb.append(getQlcPlusHost());
+		sb.append(":");
+		sb.append(getQlcPlusPort());
+		sb.append("/");
+		return sb.toString();
 	}
 
 	/**
@@ -154,6 +178,36 @@ public class CucarachaConfig {
 	 */
 	public final void setBridgeHost(String bridgeHost) {
 		this.bridgeHost = bridgeHost;
+	}
+
+	/**
+	 * @return the qlcPlusHost
+	 */
+	public final String getQlcPlusHost() {
+		return qlcPlusHost;
+	}
+
+	/**
+	 * @param qlcPlusHost
+	 *            the qlcPlusHost to set
+	 */
+	public final void setQlcPlusHost(String qlcPlusHost) {
+		this.qlcPlusHost = qlcPlusHost;
+	}
+
+	/**
+	 * @return the qlcPlusPort
+	 */
+	public final String getQlcPlusPort() {
+		return qlcPlusPort;
+	}
+
+	/**
+	 * @param qlcPlusPort
+	 *            the qlcPlusPort to set
+	 */
+	public final void setQlcPlusPort(String qlcPlusPort) {
+		this.qlcPlusPort = qlcPlusPort;
 	}
 
 	public String print() {
