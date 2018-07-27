@@ -9,6 +9,8 @@ import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -34,6 +36,7 @@ import de.plasmawolke.cucaracha.model.AccessoryType;
 import de.plasmawolke.cucaracha.model.CucarachaAccessory;
 import de.plasmawolke.cucaracha.model.CucarachaConfig;
 import de.plasmawolke.cucaracha.wsqlcplusdmx.ButtonCollector;
+import de.plasmawolke.cucaracha.wsqlcplusdmx.QlcButtonControl;
 import de.plasmawolke.cucaracha.wsqlcplusdmx.VirtualConsoleButton;
 
 /**
@@ -55,6 +58,8 @@ public class Cucaracha {
 	private CucarachaConfig cfg = null;
 
 	private List<HomekitAccessory> accessories = new ArrayList<>();
+
+	private HomekitRoot bridge;
 
 	/**
 	 * Constructs the Application
@@ -81,20 +86,24 @@ public class Cucaracha {
 
 	private void wireDmx() {
 
-		ButtonCollector bc = new ButtonCollector();
+		List<VirtualConsoleButton> buttons = null;
 		try {
-			bc.populate(cfg.buildQlcPlusVirtualConsoleUrl());
+			buttons = ButtonCollector.populate(cfg.buildQlcPlusVirtualConsoleUrl());
+			lastButtonHashCode = buttons.hashCode();
 		} catch (Exception e) {
 			logger.error("Could not populate buttons: ", e);
 			return;
 		}
 
-		List<VirtualConsoleButton> buttons = bc.getButtons();
-
 		if (buttons.isEmpty()) {
 			logger.info("No QLC+ buttons found!");
 		}
 
+		addAccessoriesByQlcButtons(buttons);
+
+	}
+
+	private void addAccessoriesByQlcButtons(List<VirtualConsoleButton> buttons) {
 		int hapIdBase = 100;
 		for (VirtualConsoleButton button : buttons) {
 
@@ -113,6 +122,52 @@ public class Cucaracha {
 			accessories.add(dmxSwitch);
 
 		}
+	}
+
+	private int lastButtonHashCode = -1;
+
+	public void updateDmx() {
+
+		logger.info("Updating from QLC+ Virtual Console...");
+
+		try {
+			List<VirtualConsoleButton> buttons = ButtonCollector.populate(cfg.buildQlcPlusVirtualConsoleUrl());
+			int buttonsHashCode = buttons.hashCode();
+			if (buttonsHashCode != lastButtonHashCode) {
+				logger.info("QLC+ Virtual Console Buttons have been changed!");
+
+				for (HomekitAccessory accessory : accessories) {
+
+					if (accessory instanceof QlcButtonControl) {
+						QlcButtonControl control = (QlcButtonControl) accessory;
+						for (VirtualConsoleButton virtualConsoleButton : buttons) {
+							if (control.getHapId() - 100 == virtualConsoleButton.getId()) {
+								logger.info("Updating state for " + virtualConsoleButton.getName() + ". Device on =  "
+										+ virtualConsoleButton.isEnabled());
+								control.setInternalPowerState(virtualConsoleButton.isEnabled());
+								if (control.getPowerStateChangeCallback() != null) {
+									control.getPowerStateChangeCallback().changed();
+								} else {
+									logger.warn("Call of getPowerStateChangeCallback returned null for '"
+											+ control.getHapLabel() + "'.");
+								}
+
+								break;
+							}
+						}
+
+					}
+				}
+
+				lastButtonHashCode = buttonsHashCode;
+
+			}
+
+		} catch (Exception e) {
+			logger.error("Updating from QLC+ Virtual Console failed: ", e);
+		}
+
+		logger.info("Updating from QLC+ Virtual Console done!");
 
 	}
 
@@ -305,8 +360,8 @@ public class Cucaracha {
 		logger.info("Starting Homekit Bridge...");
 		HomekitServer homekit = new HomekitServer(InetAddress.getByName(cfg.getBridgeHost()), cfg.getBridgePort());
 		HomekitAuthInfo authInfo = createHomekitAuthInfo();
-		HomekitRoot bridge = homekit.createBridge(authInfo, cfg.getBridgeName(), cfg.getBridgeVendor(),
-				cfg.getBridgeVersion(), cfg.getBridgeSerialNo());
+		bridge = homekit.createBridge(authInfo, cfg.getBridgeName(), cfg.getBridgeVendor(), cfg.getBridgeVersion(),
+				cfg.getBridgeSerialNo());
 
 		for (HomekitAccessory homekitAccessory : accessories) {
 			bridge.addAccessory(homekitAccessory);
@@ -337,7 +392,16 @@ public class Cucaracha {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new Cucaracha();
+		Cucaracha app = new Cucaracha();
+
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				app.updateDmx();
+			}
+		}, 30000, 5000);
 	}
 
 }

@@ -14,15 +14,15 @@ import org.slf4j.LoggerFactory;
 
 import de.plasmawolke.cucaracha.model.CucarachaConfig;
 
-public class ButtonCollector {
+public abstract class ButtonCollector {
 
 	private final static Logger logger = LoggerFactory.getLogger(ButtonCollector.class);
 
-	private List<VirtualConsoleButton> buttons = new ArrayList<>();
+	public static List<VirtualConsoleButton> populate(String url) throws Exception {
 
-	public void populate(String url) throws Exception {
+		List<VirtualConsoleButton> buttons = new ArrayList<>();
 
-		logger.info("Populating buttons from " + url);
+		logger.debug("Populating buttons from " + url);
 
 		// Instantiate HttpClient
 		HttpClient httpClient = new HttpClient();
@@ -42,7 +42,7 @@ public class ButtonCollector {
 		org.jsoup.nodes.Document doc = Jsoup.parse(html);
 		Elements links = doc.select("a.vcbutton");
 
-		logger.info("Found " + links.size() + " buttons.");
+		logger.debug("Found " + links.size() + " buttons.");
 
 		for (Element element : links) {
 
@@ -60,20 +60,17 @@ public class ButtonCollector {
 
 				buttons.add(vcb);
 
-				logger.info("Added " + name + " (" + id + ") with state " + enabled);
+				logger.debug("Collected " + name + " (" + id + ") with state " + enabled);
 			}
 
 		}
-
-	}
-
-	public List<VirtualConsoleButton> getButtons() {
 		return buttons;
+
 	}
 
 	public static void main(String[] args) throws Exception {
-		ButtonCollector bc = new ButtonCollector();
-		bc.populate(new CucarachaConfig().buildQlcPlusVirtualConsoleUrl());
+
+		ButtonCollector.populate(new CucarachaConfig().buildQlcPlusVirtualConsoleUrl());
 
 	}
 
