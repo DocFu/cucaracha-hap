@@ -71,8 +71,10 @@ public class Cucaracha {
 			// Initialize config (bridge config, switches,...)
 			init();
 
+			initInternetPass();
+
 			// Wire GPIO
-			wire();
+			//wire();
 
 			wireDmx();
 
@@ -80,7 +82,7 @@ public class Cucaracha {
 			startHomekitBridge();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Construct failed", e);
 		}
 	}
 
@@ -300,6 +302,20 @@ public class Cucaracha {
 
 	}
 
+	private PassTelekomChecker remainingInternetSensor = null;
+
+	public void initInternetPass() {
+
+		remainingInternetSensor = new PassTelekomChecker(new CucarachaAccessory());
+		try {
+			remainingInternetSensor.populate();
+			accessories.add(remainingInternetSensor);
+		} catch (Exception e) {
+			logger.error("Init the InternetPass Sensor failed!");
+		}
+
+	}
+
 	/**
 	 * Provides the persisted {@link HomekitAuthInfo}. If there was no auth info
 	 * before, a new one is initialized.
@@ -402,6 +418,24 @@ public class Cucaracha {
 				app.updateDmx();
 			}
 		}, 30000, 5000);
+
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				try {
+					logger.info("Updating remaining internet...");
+					app.getRemainingInternetSensor().populate();
+				} catch (Exception e) {
+					logger.error("Error while updating remaining internet.", e);
+				}
+			}
+		}, 30000, 1000 * 60);
+
+	}
+
+	public PassTelekomChecker getRemainingInternetSensor() {
+		return remainingInternetSensor;
 	}
 
 }
