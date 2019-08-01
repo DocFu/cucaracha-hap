@@ -26,7 +26,7 @@ public class CucarachaConfig {
 	private String bridgeVersion = "2018.1";
 	private String bridgeSerialNo = "0000";
 
-	private String qlcPlusHost = "schneestreamchen.local";
+	private String qlcPlusHost = "blackmini.local";
 	private String qlcPlusPort = "9999";
 
 	private List<CucarachaAccessory> accessories = new ArrayList<>();
